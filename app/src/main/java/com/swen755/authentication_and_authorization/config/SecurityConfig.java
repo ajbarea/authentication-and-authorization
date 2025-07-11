@@ -14,7 +14,6 @@ import org.springframework.security.web.SecurityFilterChain;
 
 /**
  * Spring Security Configuration
- * Implements Role-Based Access Control (RBAC) for authentication and
  * authorization
  */
 @Configuration
@@ -28,9 +27,7 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests(authz -> authz
-                        .requestMatchers("/api/public/**").permitAll() // Public endpoints
-                        .requestMatchers("/api/user/**").hasAnyRole("USER", "ADMIN") // User or Admin access
-                        .requestMatchers("/api/admin/**").hasRole("ADMIN") // Admin only access
+                        .requestMatchers("/api/auth/register", "/", "/api/stream/start", "/api/stream/stop","/api/stream/stream_*").permitAll()
                         .anyRequest().authenticated() // All other requests require authentication
                 )
                 .httpBasic(basic -> {
@@ -40,25 +37,7 @@ public class SecurityConfig {
         return http.build();
     }
 
-    /**
-     * Define in-memory users with roles as specified in README
-     */
-    @Bean
-    public UserDetailsService userDetailsService() {
-        UserDetails admin = User.builder()
-                .username("admin")
-                .password(passwordEncoder().encode("admin123"))
-                .roles("ADMIN")
-                .build();
 
-        UserDetails user = User.builder()
-                .username("user")
-                .password(passwordEncoder().encode("user123"))
-                .roles("USER")
-                .build();
-
-        return new InMemoryUserDetailsManager(admin, user);
-    }
 
     /**
      * Password encoder for secure password storage
