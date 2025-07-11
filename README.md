@@ -16,6 +16,11 @@ This project demonstrates:
 
 Ultimately, this project emphasizes the real-world relevance of integrating and extending existing components to meet system-specific goals, fulfilling the assignment’s objective of not just designing, but **implementing and validating architectural tactics**.
 
+## Architecture
+
+### Components Diagram
+![livestreamingarch.png](./images/livestreamingarch.png)
+
 
 ---
 
