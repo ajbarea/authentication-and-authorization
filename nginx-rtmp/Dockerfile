@@ -26,8 +26,9 @@ RUN mkdir -p /tmp/build/nginx && \
 # Download and decompress RTMP module
 RUN mkdir -p /tmp/build/nginx-rtmp-module && \
     cd /tmp/build/nginx-rtmp-module && \
-    wget -O nginx-rtmp-module-${NGINX_RTMP_MODULE_VERSION}.tar.gz https://github.com/arut/nginx-rtmp-module/archive/v${NGINX_RTMP_MODULE_VERSION}.tar.gz && \
+    wget -O nginx-rtmp-module-${NGINX_RTMP_MODULE_VERSION}.tar.gz https://github.com/mannyamorim/nginx-rtmp-module/archive/refs/heads/master.tar.gz && \
     tar -zxf nginx-rtmp-module-${NGINX_RTMP_MODULE_VERSION}.tar.gz && \
+    mv nginx-rtmp-module-master nginx-rtmp-module-${NGINX_RTMP_MODULE_VERSION} && \
     cd nginx-rtmp-module-${NGINX_RTMP_MODULE_VERSION}
 
 # Build and install Nginx
@@ -58,5 +59,11 @@ RUN ln -sf /dev/stdout /var/log/nginx/access.log && \
 # Set up config file
 COPY nginx.conf /etc/nginx/nginx.conf
 
+RUN mkdir -p /var/tmp/live && \
+    chown -R nobody:nogroup /var/tmp/live && \
+    chmod -R 755 /var/tmp/live
+
 EXPOSE 1935
+EXPOSE 9090
+
 CMD ["nginx", "-g", "daemon off;"]

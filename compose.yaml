@@ -23,8 +23,8 @@ services:
     image: nginx-rtmp-server:latest
     ports:
       - "1935:1935"
+      - "9090:9090"
     volumes:
-      - ./nginx-rtmp/conf:/etc/nginx/conf.d
       - ./nginx-rtmp/html:/usr/share/nginx/html
     restart: unless-stopped
 
@@ -44,12 +44,13 @@ services:
       - mysql
     restart: unless-stopped
 
-    #hot reload
-    develop:
-      watch:
-        - action: sync
-          path: ./app
-          target: /app
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
 
 volumes:
   mysql_data:

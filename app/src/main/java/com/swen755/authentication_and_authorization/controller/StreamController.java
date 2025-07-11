@@ -23,11 +23,18 @@ public class StreamController {
     public ResponseEntity<?> start(@RequestParam("name") String streamKey) throws Exception {
         try{
             Optional<User> user = userService.findByStreamKey(streamKey);
-            return ResponseEntity.status(HttpStatus.FOUND).header("Location", user.get().getUsername()).build();
+            return ResponseEntity.status(HttpStatus.FOUND).header("Location", "stream_"+user.get().getUsername()).build();
             //return ResponseEntity.ok().build();
 
         }catch (Exception e){
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
     }
+
+    @GetMapping("/stream_{username}")
+    public ResponseEntity<?> redirect()
+    {
+        return ResponseEntity.ok().build();
+    }
+
 }
