@@ -19,8 +19,8 @@ Ultimately, this project emphasizes the real-world relevance of integrating and 
 ## Architecture
 
 ### Components Diagram
-![livestreamingarch.png](./images/livestreamingarch.png)
 
+![livestreamingarch.png](./images/livestreamingarch.png)
 
 ---
 
@@ -37,10 +37,12 @@ Ultimately, this project emphasizes the real-world relevance of integrating and 
 
 ### Dependencies
 
-The project is build using docker compose which contains the following services:
-- **Spring Boot**: The backend service that handles authentication and authorization.
-- **MySQL**: The database for storing user credentials and stream keys.
-- **NGINX RTMP**: The media server that handles RTMP streaming and communicates with the Spring Boot service.
+The project is built using Docker Compose which contains the following services:
+
+- **Spring Boot**: The backend service (in `app/` directory) that handles authentication and authorization. It uses Spring Web, Spring Security, and Spring Data JPA.
+- **MySQL**: The database for storing user credentials and stream keys
+- **NGINX RTMP**: The media server (in `nginx-rtmp/` directory) that handles RTMP streaming and communicates with the Spring Boot service for stream authentication
+
 ---
 
 ## 🏗️ How to Run
@@ -48,146 +50,147 @@ The project is build using docker compose which contains the following services:
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/your-username/authentication-and-authorization.git
+   git clone https://github.com/ajbarea/authentication-and-authorization.git
    cd authentication-and-authorization
    ```
 
-2. Build the services using Docker compose:
+2. Build the services using Docker Compose:
 
    ```bash
    docker compose up -d
    ```
 
-3. Register for a streaming key by send a post request to `localhost:8080/api/auth/register`.  There are many ways that you may do this.
-you may use postman, insomnia, etc .... or an classic curl
-```bash
-curl -X POST http://localhost:8080/api/auth/register \
-  -H "Content-Type: application/json" \
-  -d '{
-    "username": "yolo2",
-    "password": "mySuperSecret",
-    "confirmPassword": "mySuperSecret",
-    "email": "myEmail2@gmail.com"
-  }'
-```
+   This will start:
+   - **MySQL database** on port 3306
+   - **NGINX RTMP server** on ports 1935 (RTMP) and 9090 (HTTP)
+   - **Spring Boot application** on port 8080
 
-You should see a response similar to
-```bash
-{
-  "username": "yolo2",
-  "streamKey": "generated-stream-key"
-}
-```
+3. Register for a streaming key by sending a POST request to `localhost:8080/api/auth/register`. There are many ways that you may do this.
+   You may use Postman, Insomnia, etc., or a classic curl command:
+
+   ```bash
+   curl -X POST http://localhost:8080/api/auth/register \
+     -H "Content-Type: application/json" \
+     -d '{
+       "username": "yolo2",
+       "password": "mySuperSecret",
+       "confirmPassword": "mySuperSecret",
+       "email": "myEmail2@gmail.com"
+     }'
+   ```
+
+   You should see a response similar to:
+
+   ```json
+   {
+     "username": "yolo2",
+     "streamKey": "generated-stream-key"
+   }
+   ```
 
 4. Copy your stream key. You will need this to paste in obs or ffmpeg to start streaming.
 5. Start streaming using your favorite streaming client (e.g., OBS, ffmpeg) with the RTMP URL:
-   ```
-   rtmp://localhost/live/<your-stream-key>
-   ```
- For example if you are using OBS, go to `Settings` -> `Stream`, select `Custom` as the service, and enter the following URL:
-   ```
+
+   ```text
    rtmp://localhost/live
    ```
-   In the stream key field, paste your generated stream key.  
 
-6. Click on start stream in OBS or run the following ffmpeg command 
+   In the stream key field, paste your generated stream key.
 
-   
-7. View the stream using a media player that supports RTMP (e.g., VLC, ffplay) with the URL:
+6. Click on start stream in OBS or run the following ffmpeg command:
+
+   ```bash
+   ffmpeg -f lavfi -i testsrc2=size=1280x720:rate=30 -f lavfi -i sine=frequency=1000:sample_rate=44100 -c:v libx264 -preset veryfast -c:a aac -f flv rtmp://localhost/live/<your-stream-key>
    ```
-   http://localhost:9090/live/<your username>/index.m3u8
+
+7. View the stream using a media player that supports HLS (e.g., VLC, ffplay) with the URL:
+
+   ```text
+   http://localhost:9090/live/<your-stream-key>/index.m3u8
    ```
+
 ---
 
-[//]: # ()
-[//]: # (## 👥 User Roles)
+## ✔️ Security Tactics Demonstrated
 
-[//]: # ()
-[//]: # (The system defines multiple users with different access rights:)
+This project demonstrates the following security tactics in a real-world streaming context:
 
-[//]: # ()
-[//]: # (| Username | Password   | Role         |)
+- **Authentication**: User registration and stream key generation for publisher identity verification
+- **Authorization**: Stream-level access control using NGINX RTMP hooks and Spring Boot validation
+- **Secure Integration**: Communication between NGINX RTMP and Spring Boot backend for real-time stream authorization
+- **Database Security**: Secure storage of user credentials and stream keys using BCrypt password hashing in MySQL
+- **Token-based Security**: Stream keys act as bearer tokens for publishing authorization
+- **HLS Security**: Public access to HLS streams while maintaining publisher authentication
 
-[//]: # (| -------- | ---------- | ------------ |)
+## 🔍 API Endpoints
 
-[//]: # (| `admin`  | `admin123` | `ROLE_ADMIN` |)
+| Endpoint | Method | Description | Authentication Required |
+|----------|--------|-------------|------------------------|
+| `/` or `/health` | GET | Health check endpoint | ❌ No |
+| `/api/auth/register` | POST | Register new user and generate stream key | ❌ No |
+| `/api/stream/start` | POST | Validate stream key during NGINX on_publish (param: `name`) | ❌ No (internal) |
 
-[//]: # (| `user`   | `user123`  | `ROLE_USER`  |)
+### Registration Request Format
 
-[//]: # ()
-[//]: # (---)
+```json
+{
+  "username": "your_username",
+  "password": "your_password", 
+  "confirmPassword": "your_password",
+  "email": "your_email@example.com"
+}
+```
 
-[//]: # ()
-[//]: # (## 🔐 Role-Based Access Control)
+### Registration Response Format
 
-[//]: # ()
-[//]: # (Example access rules:)
+```json
+{
+  "username": "your_username",
+  "streamKey": "generated-16-char-key"
+}
+```
 
-[//]: # ()
-[//]: # (- `/api/public` – Accessible to everyone &#40;no authentication required&#41;)
+## 🧪 Testing
 
-[//]: # (- `/api/user` – Requires `ROLE_USER` or higher)
+You can test the system by:
 
-[//]: # (- `/api/admin` – Requires `ROLE_ADMIN`)
+1. **Health Check**: Verify the application is running
 
-[//]: # ()
-[//]: # (These are configured using Spring Security's role-based annotations or HTTP security configuration.)
+   ```bash
+   curl http://localhost:8080/health
+   ```
 
-[//]: # ()
-[//]: # (---)
+2. **Registration**: Register a new user and receive a stream key
 
-[//]: # ()
-[//]: # (## 🛡️ Security Tactics Demonstrated)
+   ```bash
+   curl -X POST http://localhost:8080/api/auth/register \
+     -H "Content-Type: application/json" \
+     -d '{
+       "username": "testuser",
+       "password": "testpass123",
+       "confirmPassword": "testpass123", 
+       "email": "test@example.com"
+     }'
+   ```
 
-[//]: # ()
-[//]: # (- **Authentication**: Verifying user identity using HTTP Basic Authentication with username/password)
+3. **Streaming**: Use the received stream key to publish via RTMP
 
-[//]: # (- **Authorization**: Controlling access based on user roles using Spring Security's RBAC)
+   ```bash
+   # Test with ffmpeg
+   ffmpeg -f lavfi -i testsrc2=size=1280x720:rate=30 \
+     -f lavfi -i sine=frequency=1000:sample_rate=44100 \
+     -c:v libx264 -preset veryfast -c:a aac -f flv \
+     rtmp://localhost:1935/live/YOUR_STREAM_KEY
+   ```
 
-[//]: # (- **Role-Based Access Control &#40;RBAC&#41;**: Different endpoints require different role levels)
+4. **Authorization**: Try streaming with an invalid key (should be rejected)
 
-[//]: # (- **Password Encoding**: User passwords are securely encoded using BCrypt)
+5. **Viewing**: Access the stream via HLS without authentication
 
-[//]: # ()
-[//]: # (## 🔍 API Endpoints)
-
-[//]: # ()
-[//]: # (| Endpoint | Authentication Required | Authorized Roles | Description |)
-
-[//]: # (|----------|------------------------|------------------|-------------|)
-
-[//]: # (| `GET /api/public` | ❌ No | Everyone | Public information accessible to all |)
-
-[//]: # (| `GET /api/user` | ✅ Yes | USER, ADMIN | User-level protected resources |)
-
-[//]: # (| `GET /api/admin` | ✅ Yes | ADMIN only | Admin-only protected resources |)
-
-[//]: # (| `GET /api/status` | ✅ Yes | USER, ADMIN | Authentication status information |)
-
-[//]: # ()
-[//]: # (## 🧪 Testing)
-
-[//]: # ()
-[//]: # (Run the test suite to verify authentication and authorization:)
-
-[//]: # ()
-[//]: # (```bash)
-
-[//]: # (mvn test)
-
-[//]: # (```)
-
-[//]: # ()
-[//]: # (The tests verify:)
-
-[//]: # ()
-[//]: # (- Public endpoints are accessible without authentication)
-
-[//]: # (- Protected endpoints require valid credentials)
-
-[//]: # (- Role-based access control works correctly)
-
-[//]: # (- Admin endpoints reject non-admin users)
+   ```bash
+   # View with ffplay
+   ffplay http://localhost:9090/live/YOUR_STREAM_KEY/index.m3u8
+   ```
 
 ## 📚 References
 
