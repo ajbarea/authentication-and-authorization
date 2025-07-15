@@ -24,7 +24,62 @@ Ultimately, this project emphasizes the real-world relevance of integrating and 
 
 ### Class Diagram
 
-![livestreamingclass.png](./images/livestreamingclass.png)
+```mermaid
+
+%%{init: {'theme': 'default', 'themeVariables': { 'lineColor': '#FFD700' }}}%%
+classDiagram
+   class RegisterRequest {
+      +String username
+      +String password
+      +String confirmPassword
+      +String email
+   }
+
+   class User {
+      +UUID id
+      +String username
+      +String password
+      +String email
+      +String streamKey
+      +boolean active
+      +generateStreamKey()
+   }
+
+   class UserRepository {
+      +findByUsername(String)
+      +findByStreamKey(String)
+   }
+
+   class UserService {
+      -UserRepository userRepository
+      -PasswordEncoder passwordEncoder
+      +register(RegisterRequest)
+      +findByStreamKey(String)
+   }
+
+   class AuthController {
+      -UserService userService
+      +register(RegisterRequest)
+   }
+
+   class StreamController {
+      -UserService userService
+      +start(String)
+      +stop(String)
+      +redirect()
+   }
+
+   class HealthController {
+      +healthCheck()
+   }
+
+   RegisterRequest --> UserService : used by
+   UserService --> UserRepository
+   UserService --> User
+   AuthController --> UserService
+   StreamController --> UserService
+
+```
 
 ---
 
@@ -131,12 +186,12 @@ This project demonstrates the following security tactics in a real-world streami
 
 ## 🔍 API Endpoints
 
-| Endpoint | Method | Description | Authentication Required |
+| Endpoint | Method | Description | Authentication & Authorization Required |
 |----------|--------|-------------|------------------------|
 | `/` or `/health` | GET | Health check endpoint | ❌ No |
 | `/api/auth/register` | POST | Register new user and generate stream key | ❌ No |
-| `/api/stream/start` | POST | Validate stream key during NGINX on_publish (param: `name`) | ❌ No (internal) |
-| `/api/stream/stop` | POST | Validate stream key during NGINX on_publish_done (param: `name`) | ❌ No (internal) |
+| `/api/stream/start` | POST | Validate stream key during NGINX on_publish (param: `name`) | ✅ |
+| `/api/stream/stop` | POST | Validate stream key during NGINX on_publish_done (param: `name`) | ✅ |
 
 ### Registration Request Format
 
