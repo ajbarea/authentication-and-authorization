@@ -31,6 +31,21 @@ public class StreamController {
         }
     }
 
+    @PostMapping("/stop")
+    public ResponseEntity<?> stop(@RequestParam("name") String streamKey) throws Exception {
+        try {
+            Optional<User> user = userService.findByStreamKey(streamKey);
+            if (user.isPresent()) {
+                // Stops the stream
+                return ResponseEntity.ok().build();
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Stream key not found");
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+    }
+
     @GetMapping("/stream_{username}")
     public ResponseEntity<?> redirect()
     {

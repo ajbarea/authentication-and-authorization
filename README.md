@@ -22,6 +22,10 @@ Ultimately, this project emphasizes the real-world relevance of integrating and 
 
 ![livestreamingarch.png](./images/livestreamingarch.png)
 
+### Class Diagram
+
+![livestreamingclass.png](./images/livestreamingclass.png)
+
 ---
 
 ## 🚀 Getting Started
@@ -106,7 +110,10 @@ The project is built using Docker Compose which contains the following services:
 7. View the stream using a media player that supports HLS (e.g., VLC, ffplay) with the URL:
 
    ```text
-   http://localhost:9090/live/<your-stream-key>/index.m3u8
+   http://localhost:9090/live/stream_<your-username>/index.m3u8
+
+   Example:
+   http://localhost:9090/live/stream_yolo2/index.m3u8
    ```
 
 ---
@@ -129,6 +136,7 @@ This project demonstrates the following security tactics in a real-world streami
 | `/` or `/health` | GET | Health check endpoint | ❌ No |
 | `/api/auth/register` | POST | Register new user and generate stream key | ❌ No |
 | `/api/stream/start` | POST | Validate stream key during NGINX on_publish (param: `name`) | ❌ No (internal) |
+| `/api/stream/stop` | POST | Validate stream key during NGINX on_publish_done (param: `name`) | ❌ No (internal) |
 
 ### Registration Request Format
 
@@ -189,7 +197,7 @@ You can test the system by:
 
    ```bash
    # View with ffplay
-   ffplay http://localhost:9090/live/YOUR_STREAM_KEY/index.m3u8
+   ffplay http://localhost:9090/live/stream_YOURUSERNAME/index.m3u8
    ```
 
 ## 📚 References
