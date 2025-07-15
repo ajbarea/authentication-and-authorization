@@ -24,9 +24,8 @@ Ultimately, this project emphasizes the real-world relevance of integrating and 
 
 ### Class Diagram
 
-```
-   mermaid
-   
+```mermaid
+
 %%{init: {'theme': 'default'}}%%
 classDiagram
    class RegisterRequest {
