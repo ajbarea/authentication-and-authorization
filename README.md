@@ -186,12 +186,12 @@ This project demonstrates the following security tactics in a real-world streami
 
 ## 🔍 API Endpoints
 
-| Endpoint | Method | Description | Authentication Required |
+| Endpoint | Method | Description | Authentication & Authorization Required |
 |----------|--------|-------------|------------------------|
 | `/` or `/health` | GET | Health check endpoint | ❌ No |
 | `/api/auth/register` | POST | Register new user and generate stream key | ❌ No |
-| `/api/stream/start` | POST | Validate stream key during NGINX on_publish (param: `name`) | ❌ No (internal) |
-| `/api/stream/stop` | POST | Validate stream key during NGINX on_publish_done (param: `name`) | ❌ No (internal) |
+| `/api/stream/start` | POST | Validate stream key during NGINX on_publish (param: `name`) | ✅ |
+| `/api/stream/stop` | POST | Validate stream key during NGINX on_publish_done (param: `name`) | ✅ |
 
 ### Registration Request Format
 
