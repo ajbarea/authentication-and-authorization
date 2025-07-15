@@ -26,7 +26,7 @@ Ultimately, this project emphasizes the real-world relevance of integrating and 
 
 ```mermaid
 
-%%{init: {'theme': 'default'}}%%
+%%{init: {'theme': 'default', 'themeVariables': { 'lineColor': '#FFD700' }}}%%
 classDiagram
    class RegisterRequest {
       +String username
